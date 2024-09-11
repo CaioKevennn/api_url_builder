@@ -1,0 +1,14 @@
+# Enable the RewriteEngine to allow URL rewriting
+RewriteEngine On
+
+# Check if the requested filename does not exist as a file
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Check if the requested filename does not exist as a directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Check if the requested filename does not exist as a symbolic link
+RewriteCond %{REQUEST_FILENAME} !-l
+
+# If none of the above conditions are met, rewrite the URL to index.php
+RewriteRule . index.php [L]
