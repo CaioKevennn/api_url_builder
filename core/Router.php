@@ -1,8 +1,6 @@
 <?php
 
-
 namespace core;
-
 
 class Router
 {
@@ -17,17 +15,17 @@ class Router
     {
         $this->url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $this->parts = explode("/", $this->url);
-        $this->resource = $this->parts[2] ?? null;
-        $this->id = $this->parts[3] ?? null;
+        $this->resource = $this->parts[3] ?? null;
+        $this->id = $this->parts[4] ?? null;
     }
 
-    public function getResource(): ?string
+    public function getResource() : ?string
     {
         return $this->resource;
     }
 
 
-    public function getId(): ?string
+    public function getId() : ?string
     {
         return $this->id;
     }
