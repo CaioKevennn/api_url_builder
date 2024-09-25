@@ -3,7 +3,7 @@
 namespace src;
 class UrlsController
 {
-    public function __construct(private UrlsModel $gateway)
+    public function __construct(private UrlsModel $gateway, private int $userId)
     {
     }
 
@@ -14,7 +14,7 @@ class UrlsController
         {
             if ($method == "GET")
             {
-                echo json_encode($this->gateway->getAll());
+                echo json_encode($this->gateway->getAllForUser($this->userId));
             }
             elseif ($method == "POST")
             {
@@ -24,7 +24,7 @@ class UrlsController
                 if (empty($errors))
                 {
                     $url = $this->createUrl($data);
-                    $idCreatedUrl = $this->gateway->create($url);
+                    $idCreatedUrl = $this->gateway->createForUser($url,$this->userId);
 
                     $this->responseCreated($idCreatedUrl);
                 }
@@ -40,8 +40,8 @@ class UrlsController
         }
         else
         {
-            $task = $this->gateway->get($id);
-            if (! $task)
+            $url = $this->gateway->getForUser($id,$this->userId);
+            if (! $url)
             {
                 $this->respondNotFound($id);
                 return;
@@ -50,10 +50,10 @@ class UrlsController
             switch ( $method )
             {
                 case "GET":
-                    echo json_encode($task);
+                    echo json_encode($url);
                     break;
                 case "DELETE":
-                    $rows = $this->gateway->delete($id);
+                    $rows = $this->gateway->deleteForUser($id,$this->userId);
                     echo json_encode(["Message" => "Url deleted", "row: " => $rows]);
                     break;
                 default:
@@ -85,12 +85,12 @@ class UrlsController
     private function respondNotFound(string $id) : void
     {
         http_response_code(404);
-        echo json_encode(["Message" => "Task with id $id not found"]);
+        echo json_encode(["Message" => "Url with id $id not found"]);
     }
     private function responseCreated(string $id) : void
     {
         http_response_code(201);
-        echo json_encode(["Message" => "Task Created. Id: $id"]);
+        echo json_encode(["Message" => "Url Created. Id: $id"]);
     }
 
     private function respondUnprocessebleEntity($errors)

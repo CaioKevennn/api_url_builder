@@ -5,50 +5,60 @@ namespace src;
 class UrlsModel
 {
     private \PDO $conn;
+    private int $userId;
     public function __construct(DatabaseModel $database)
     {
         $this->conn = $database->getConnection();
+
     }
 
-    public function getAll() : array
+    public function getAllForUser($userId) : array
     {
         $sql = "SELECT * 
-               FROM urls ";
-        $stmt = $this->conn->query($sql);
+                FROM urls
+                WHERE user_id = :userId 
+                ORDER BY id_url";
+        $stmt = $this->conn->prepare($sql);
 
+        $stmt->bindValue(":userId", $userId, \PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function get($id) : array|bool
+    public function getForUser($id,$userId) : array|bool
     {
         $sql = "SELECT *
                 FROM urls
-                WHERE id_url = :id ";
-        $stm = $this->conn->prepare($sql);
-
-        $stm->bindValue(":id", $id, \PDO::PARAM_STR);
-        $stm->execute();
-        return $stm->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-    public function create($url) : string
-    {
-        $sql = "INSERT INTO urls (link_url)
-                VALUES(:url)";
+                WHERE id_url = :id 
+                AND user_id = :userId";
         $stmt = $this->conn->prepare($sql);
 
-        $stmt->bindValue("url", $url, \PDO::PARAM_STR);
+        $stmt->bindValue(":id", $id, \PDO::PARAM_STR);
+        $stmt->bindValue(":userId", $userId, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function createForUser($url,$userId) : string
+    {
+        $sql = "INSERT INTO urls (link_url,user_id)
+                VALUES(:url, :userId)";
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindValue(":userId", $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(":url", $url, \PDO::PARAM_STR);
         $stmt->execute();
         return $this->conn->lastInsertId();
-
     }
 
-    public function delete($id) : int
+    public function deleteForUser($id,$userId) : int
     {
         $sql = "DELETE FROM urls
-                WHERE id_url = :id";
+                WHERE id_url = :id
+                AND user_id = :userId";
         $stmt = $this->conn->prepare($sql);
 
+        $stmt->bindValue(":userId", $userId, \PDO::PARAM_INT);
         $stmt->bindValue(":id", $id, \PDO::PARAM_STR);
         $stmt->execute();
         return $stmt->rowCount();

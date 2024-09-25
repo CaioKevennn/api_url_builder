@@ -17,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === "POST")
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $api_key = bin2hex(random_bytes(16));
 
-
     $sql = "INSERT INTO user_urls (name, username, password_hash, api_key)
            VALUES (:name, :username, :password_hash, :api_key)";
     $smt = $conn->prepare($sql);

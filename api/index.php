@@ -1,20 +1,16 @@
 <?php
 declare(strict_types=1);
-require dirname(__DIR__) . "/vendor/autoload.php";
 
+require __DIR__ . "/bootstrap.php";
+
+use src\UserModel;
 use core\Router;
 use src\DatabaseModel;
 use src\UrlsController;
-use src\ErrorHandlerController;
 use src\UrlsModel;
+use src\Auth;
 
-set_exception_handler([ErrorHandlerController::class, "handleException"]);
-set_error_handler([ErrorHandlerController::class, "handleError"]);
-
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
 $route = new Router;
-
 
 if ($route->getResource() !== "urls")
 {
@@ -22,10 +18,19 @@ if ($route->getResource() !== "urls")
     exit;
 }
 
-header("Content-type: application/json; charset=UTF-8");
-
 $database = new DatabaseModel($_ENV["DB_HOST"], $_ENV["DB_NAME"], $_ENV["DB_USER"], $_ENV["DB_PASS"]);
 $database->getConnection();
+
+$userGetway = new UserModel($database);
+$auth = new Auth($userGetway);
+
+if (! $auth->authenticateAPIKey())
+{
+    exit;
+}
+
+$userId = $auth->getUser_id();
 $urlsGateway = new UrlsModel($database);
-$controller = new UrlsController($urlsGateway);
+
+$controller = new UrlsController($urlsGateway,$userId);
 $controller->processRequest($_SERVER['REQUEST_METHOD'], $route->getId());
